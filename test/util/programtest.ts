@@ -1,6 +1,6 @@
-import {execute} from '../../interpreter';
-import {parse} from '../../parser';
-import {string} from '../../util';
+import {execute} from '../../src/interpreter';
+import {parse} from '../../src/parser';
+import {string} from '../../src/util';
 
 export function testProgram(name: string, program: string) {
     describe(name, () => {

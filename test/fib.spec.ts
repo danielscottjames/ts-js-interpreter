@@ -1,4 +1,4 @@
-import {testProgram} from './support/programtest';
+import {testProgram} from './util/programtest';
 
 testProgram('fib', `
 function fib(a) {

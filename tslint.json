@@ -1,0 +1,13 @@
+{
+  "extends": "gts/tslint.json",
+  "linterOptions": {
+    "exclude": [
+      "**/*.json"
+    ]
+  },
+  "rules": {
+    "object-literal-sort-keys": false,
+    "class-name": false,
+    "interface-name": false
+  }
+}

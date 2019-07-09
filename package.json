@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "compile": "tsc",
-    "test": "tsc && jasmine"
+    "compile": "tsc -p .",
+    "test": "tsc && jasmine --config=jasmine.json",
+    "check": "gts check",
+    "clean": "gts clean",
+    "fix": "gts fix"
   },
   "author": "",
   "license": "ISC",
@@ -14,5 +17,9 @@
     "@types/node": "^12.0.12",
     "jasmine": "^3.4.0",
     "typescript": "^3.5.2"
+  },
+  "devDependencies": {
+    "gts": "^1.0.0",
+    "typescript": "~3.4.0"
   }
 }
