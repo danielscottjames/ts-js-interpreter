@@ -1,6 +1,8 @@
-import {testProgram} from './util/programtest';
+import { testProgram } from './util/programtest';
 
-testProgram('fib', `
+testProgram(
+  'fib',
+  `
 function fib(a) {
     if (a < 2) {
         return a;
@@ -8,4 +10,5 @@ function fib(a) {
 
     return fib(a - 1) + fib(a - 2);
 }
-fib(7);`);
+fib(7);`
+);

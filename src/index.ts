@@ -1,5 +1,5 @@
-import {execute} from './interpreter';
-import {parse} from './parser';
+import { execute } from './interpreter';
+import { parse } from './parser';
 import * as fs from 'fs';
 
 // Either pass in a file name, or pipe the program via stdin (file descriptor 0)
