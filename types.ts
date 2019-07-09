@@ -14,30 +14,18 @@ declare interface OBJECT_LITERAL {
     type: 'OBJECT_LITERAL',
     properties: [string, EXPRESSION][],
 }
+export declare type LITERAL = STRING_LITERAL | NUMBER_LITERAL | BOOLEAN_LITERAL | OBJECT_LITERAL;
+
+
 declare interface REFERENCE {
     type: 'REFERENCE',
     label: string,
-}
-declare interface VAR {
-    type: 'VAR',
-    lhs: string,
-    rhs: EXPRESSION,
-}
-declare interface FUNCTION_DECLARATION {
-    type: 'FUNCTION_DECLARATION',
-    name: string,
-    params: string[],
-    body: BLOCK_STATEMENT,
 }
 declare interface FUNCTION {
     type: 'FUNCTION',
     name?: string,
     params: string[],
     body: BLOCK_STATEMENT,
-}
-declare interface RETURN {
-    type: 'RETURN'
-    rhs?: EXPRESSION
 }
 declare interface BINARY_EXPRESSION {
     type: 'BINARY_EXPRESSION',
@@ -51,11 +39,30 @@ declare interface CALL {
     args: EXPRESSION[],
     this?: never,
 }
+
+export declare type EXPRESSION = CALL | BINARY_EXPRESSION | REFERENCE | LITERAL | FUNCTION;
+
+
+declare interface RETURN {
+    type: 'RETURN'
+    rhs?: EXPRESSION
+}
 declare interface IF {
     type: 'IF',
     condition: EXPRESSION,
     body: STATEMENT,
     else?: IF | STATEMENT
+}
+declare interface VAR {
+    type: 'VAR',
+    lhs: string,
+    rhs: EXPRESSION,
+}
+declare interface FUNCTION_DECLARATION {
+    type: 'FUNCTION_DECLARATION',
+    name: string,
+    params: string[],
+    body: BLOCK_STATEMENT,
 }
 export declare interface BLOCK_STATEMENT {
     type: 'BLOCK',
@@ -63,9 +70,11 @@ export declare interface BLOCK_STATEMENT {
 }
 export const BLOCK = (body: STATEMENT[]): BLOCK_STATEMENT => { return { type: 'BLOCK', body } }
 
-export declare type LITERAL = STRING_LITERAL | NUMBER_LITERAL | BOOLEAN_LITERAL | OBJECT_LITERAL;
-export declare type EXPRESSION = CALL | BINARY_EXPRESSION | REFERENCE | LITERAL | FUNCTION;
-export declare type STATEMENT = RETURN | FUNCTION_DECLARATION | VAR | EXPRESSION | IF | BLOCK_STATEMENT;
+
+export declare type STATEMENT = RETURN | FUNCTION_DECLARATION | VAR | IF | BLOCK_STATEMENT | EXPRESSION;
+
+
+
 
 
 
@@ -87,7 +96,7 @@ declare interface UNDEFINED {
 declare interface NULL {
     type: 'NULL',
 }
-declare interface ERROR {
+declare interface ERROR { // TODO, technically, not a value.
     type: 'ERROR',
     message: string,
 }
