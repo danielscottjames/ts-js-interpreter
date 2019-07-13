@@ -1,4 +1,4 @@
-import { ENV, VALUE } from './types';
+import { ENV, VALUE, UNDEFINED, STATEMENT } from './types';
 
 export function lookup(label: string, env: ENV): VALUE {
   if (env.bindings.has(label)) {
@@ -54,6 +54,46 @@ export function truthy(value: VALUE): boolean {
     default:
       throw new IncompleteSwitch(value);
   }
+}
+
+export function looseyEquals(lhs: VALUE, rhs: VALUE) {
+  if (
+    (lhs.type === 'NULL' || lhs.type === 'UNDEFINED') &&
+    (rhs.type === 'NULL' || rhs.type === 'UNDEFINED')
+  ) {
+    return true;
+  }
+
+  if (
+    lhs.type === 'NULL' ||
+    lhs.type === 'UNDEFINED' ||
+    rhs.type === 'NULL' ||
+    rhs.type === 'UNDEFINED'
+  ) {
+    return false;
+  }
+  if (lhs.type === rhs.type) {
+    return strictEquals(lhs, rhs);
+  }
+  throw new Error('Finish implementing loosy equals');
+}
+
+export function strictEquals(lhs: VALUE, rhs: VALUE) {
+  if (lhs.type !== rhs.type) {
+    return false;
+  }
+  if (lhs.type === 'NULL' || lhs.type === 'UNDEFINED') {
+    return true;
+  }
+  if (
+    lhs.type === 'BOOLEAN' ||
+    lhs.type === 'NUMBER' ||
+    lhs.type === 'STRING'
+  ) {
+    return lhs.value === (rhs as typeof lhs).value;
+  }
+
+  throw new Error('Finish implementing strict equals');
 }
 
 export class IncompleteSwitch extends Error {

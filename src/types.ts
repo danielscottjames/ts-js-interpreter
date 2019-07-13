@@ -13,6 +13,9 @@ declare interface BOOLEAN_LITERAL {
 declare interface UNDEFINED_LITERAL {
   type: 'UNDEFINED';
 }
+declare interface NULL_LITERAL {
+  type: 'NULL';
+}
 declare interface OBJECT_LITERAL {
   type: 'OBJECT_LITERAL';
   properties: Array<[string, EXPRESSION]>;
@@ -22,11 +25,18 @@ export declare type LITERAL =
   | NUMBER_LITERAL
   | BOOLEAN_LITERAL
   | UNDEFINED_LITERAL
+  | NULL_LITERAL
   | OBJECT_LITERAL;
 
 declare interface REFERENCE {
   type: 'REFERENCE';
   label: string;
+}
+export declare interface OBJECT_REFERENCE {
+  // Also, arrays and stuff like that
+  type: 'OBJECT_REFERENCE';
+  lhs: EXPRESSION;
+  rhs: EXPRESSION;
 }
 declare interface FUNCTION {
   type: 'FUNCTION';
@@ -36,7 +46,7 @@ declare interface FUNCTION {
 }
 declare interface BINARY_EXPRESSION {
   type: 'BINARY_EXPRESSION';
-  operator: 'ADD' | 'SUBTRACT' | 'LESS_THAN' | 'EQUALS';
+  operator: 'ADD' | 'SUBTRACT' | 'LESS_THAN' | 'EQUALS' | 'EQUALSEQUALS';
   lhs: EXPRESSION;
   rhs: EXPRESSION;
 }
@@ -51,6 +61,7 @@ export declare type EXPRESSION =
   | CALL
   | BINARY_EXPRESSION
   | REFERENCE
+  | OBJECT_REFERENCE
   | LITERAL
   | FUNCTION;
 

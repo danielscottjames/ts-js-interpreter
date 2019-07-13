@@ -31,6 +31,8 @@ function operatorTokenToOperator(token: ts.Token<ts.BinaryOperator>) {
       return 'LESS_THAN';
     case ts.SyntaxKind.EqualsToken:
       return 'EQUALS';
+    case ts.SyntaxKind.EqualsEqualsToken:
+      return 'EQUALSEQUALS';
     default:
       throw new Error(
         `Unknown binary operator token ${token.kind}: ${getNodeText(token)}`
@@ -74,6 +76,14 @@ function parseNode(node: ts.Node): STATEMENT {
       label: (node as ts.Identifier).text,
     };
   }
+  if (node.kind === ts.SyntaxKind.ElementAccessExpression) {
+    const elementAccess = node as ts.ElementAccessExpression;
+    return {
+      type: 'OBJECT_REFERENCE',
+      lhs: parseNode(elementAccess.expression) as EXPRESSION,
+      rhs: parseNode(elementAccess.argumentExpression) as EXPRESSION,
+    };
+  }
   if (node.kind === ts.SyntaxKind.ReturnStatement) {
     const returnStatement = node as ts.ReturnStatement;
     return {
@@ -107,6 +117,32 @@ function parseNode(node: ts.Node): STATEMENT {
     return {
       type: 'NUMBER_LITERAL',
       value: Number(numericLiteral.text),
+    };
+  }
+  if (node.kind === ts.SyntaxKind.NullKeyword) {
+    return {
+      type: 'NULL',
+    };
+  }
+  if (node.kind === ts.SyntaxKind.UndefinedKeyword) {
+    return {
+      type: 'UNDEFINED',
+    };
+  }
+  if (node.kind === ts.SyntaxKind.ObjectLiteralExpression) {
+    const objectLiteral = node as ts.ObjectLiteralExpression;
+    return {
+      type: 'OBJECT_LITERAL',
+      properties: objectLiteral.properties.map(a => {
+        if (a.kind === ts.SyntaxKind.PropertyAssignment) {
+          const propertyAssignment = a as ts.PropertyAssignment;
+          return [
+            (propertyAssignment.name as ts.Identifier).text,
+            parseNode(propertyAssignment.initializer) as EXPRESSION,
+          ];
+        }
+        throw new Error('Unknown object literal properties');
+      }),
     };
   }
   if (node.kind === ts.SyntaxKind.VariableStatement) {

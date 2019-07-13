@@ -10,8 +10,10 @@ import {
   BOOLEAN,
   LAMBDA,
   OBJECT,
+  NULL,
+  OBJECT_REFERENCE,
 } from './types';
-import { lookup, truthy, IncompleteSwitch } from './util';
+import { lookup, truthy, IncompleteSwitch, string, looseyEquals } from './util';
 
 export function execute(statements: STATEMENT[]): VALUE {
   // Setup global ENV
@@ -68,23 +70,41 @@ function evaluate(statement: STATEMENT, env: ENV): VALUE {
       });
       return obj;
     case 'BINARY_EXPRESSION': {
-      const rhsV = evaluate(statement.rhs, env);
+      if (statement.operator === 'EQUALSEQUALS') {
+        const [lhsV, rhsV] = evaluateLhsRhs(statement, env);
+        return BOOLEAN(looseyEquals(lhsV, rhsV));
+      }
+
       if (statement.operator === 'EQUALS') {
-        if (statement.lhs.type === 'REFERENCE') {
-          const lhsV = lookup(statement.lhs.label, env);
-          if (lhsV.type !== 'ERROR') {
-            Object.assign(lhsV, rhsV);
-          } else {
-            env.bindings.set(statement.lhs.label, rhsV);
+        if (statement.lhs.type === 'OBJECT_REFERENCE') {
+          const objectReference = statement.lhs;
+          const lhsV = evaluate(objectReference.lhs, env);
+          if (lhsV.type === 'OBJECT') {
+            const propertyName = string(evaluate(objectReference.rhs, env));
+            lhsV.properties.set(propertyName, evaluate(statement.rhs, env));
           }
+          return UNDEFINED;
         }
+
+        const [lhsV, rhsV] = evaluateLhsRhs(statement, env);
+
+        if (lhsV.type === 'OBJECT') {
+        } else if (
+          lhsV.type === 'NUMBER' ||
+          lhsV.type === 'STRING' ||
+          lhsV.type === 'BOOLEAN'
+        ) {
+          Object.assign(lhsV, rhsV);
+        }
+
         return UNDEFINED;
       }
-      const lhsV = evaluate(statement.lhs, env);
+
+      const [lhsV, rhsV] = evaluateLhsRhs(statement, env);
       if (lhsV.type !== 'NUMBER' || rhsV.type !== 'NUMBER') {
         return {
           type: 'ERROR',
-          message: 'Both LHS and RHS did not evaluate to a NUMBER',
+          message: 'TODO: Both LHS and RHS did not evaluate to a NUMBER',
         };
       }
       if (statement.operator === 'LESS_THAN') {
@@ -127,6 +147,13 @@ function evaluate(statement: STATEMENT, env: ENV): VALUE {
       );
     case 'REFERENCE':
       return lookup(statement.label, env);
+    case 'OBJECT_REFERENCE':
+      const lhsV = evaluate(statement.lhs, env);
+      if (lhsV.type === 'OBJECT') {
+        const propertyName = string(evaluate(statement.rhs, env));
+        return lhsV.properties.get(propertyName) || UNDEFINED;
+      }
+      return UNDEFINED;
     case 'BLOCK':
       statement.body.forEach(s => evaluate(s, env));
       return UNDEFINED;
@@ -139,8 +166,17 @@ function evaluate(statement: STATEMENT, env: ENV): VALUE {
       return UNDEFINED;
     case 'UNDEFINED':
       return UNDEFINED;
+    case 'NULL':
+      return NULL;
     default:
       // TypeScript should assert that this can never happen.
       throw new IncompleteSwitch(statement);
   }
+}
+
+function evaluateLhsRhs(
+  { lhs, rhs }: { lhs: STATEMENT; rhs: STATEMENT },
+  env: ENV
+): [VALUE, VALUE] {
+  return [evaluate(lhs, env), evaluate(rhs, env)];
 }
