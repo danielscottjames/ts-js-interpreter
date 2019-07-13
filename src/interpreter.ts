@@ -68,8 +68,19 @@ function evaluate(statement: STATEMENT, env: ENV): VALUE {
       });
       return obj;
     case 'BINARY_EXPRESSION': {
-      const lhsV = evaluate(statement.lhs, env);
       const rhsV = evaluate(statement.rhs, env);
+      if (statement.operator === 'EQUALS') {
+        if (statement.lhs.type === 'REFERENCE') {
+          const lhsV = lookup(statement.lhs.label, env);
+          if (lhsV.type !== 'ERROR') {
+            Object.assign(lhsV, rhsV);
+          } else {
+            env.bindings.set(statement.lhs.label, rhsV);
+          }
+        }
+        return UNDEFINED;
+      }
+      const lhsV = evaluate(statement.lhs, env);
       if (lhsV.type !== 'NUMBER' || rhsV.type !== 'NUMBER') {
         return {
           type: 'ERROR',
@@ -125,6 +136,8 @@ function evaluate(statement: STATEMENT, env: ENV): VALUE {
       } else if (statement.else) {
         return evaluate(statement.else, env);
       }
+      return UNDEFINED;
+    case 'UNDEFINED':
       return UNDEFINED;
     default:
       // TypeScript should assert that this can never happen.

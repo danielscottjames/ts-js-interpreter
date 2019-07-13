@@ -10,6 +10,9 @@ declare interface BOOLEAN_LITERAL {
   type: 'BOOLEAN_LITERAL';
   value: boolean;
 }
+declare interface UNDEFINED_LITERAL {
+  type: 'UNDEFINED';
+}
 declare interface OBJECT_LITERAL {
   type: 'OBJECT_LITERAL';
   properties: Array<[string, EXPRESSION]>;
@@ -18,6 +21,7 @@ export declare type LITERAL =
   | STRING_LITERAL
   | NUMBER_LITERAL
   | BOOLEAN_LITERAL
+  | UNDEFINED_LITERAL
   | OBJECT_LITERAL;
 
 declare interface REFERENCE {
@@ -32,7 +36,7 @@ declare interface FUNCTION {
 }
 declare interface BINARY_EXPRESSION {
   type: 'BINARY_EXPRESSION';
-  operator: 'ADD' | 'SUBTRACT' | 'LESS_THAN';
+  operator: 'ADD' | 'SUBTRACT' | 'LESS_THAN' | 'EQUALS';
   lhs: EXPRESSION;
   rhs: EXPRESSION;
 }

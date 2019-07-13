@@ -1,9 +1,24 @@
 import * as ts from 'typescript';
-import { STATEMENT, BLOCK_STATEMENT, EXPRESSION } from './types';
+import {
+  STATEMENT,
+  BLOCK_STATEMENT,
+  EXPRESSION,
+  UNDEFINED,
+  LITERAL,
+} from './types';
 
+const UNDEFINED_LITERAL = {
+  type: 'UNDEFINED',
+} as LITERAL;
+
+let sourceFile: ts.SourceFile;
 export function parse(code: string): STATEMENT[] {
-  const sourcefile = ts.createSourceFile('index.js', code, ts.ScriptTarget.ES5);
-  return sourcefile.statements.map(parseNode);
+  sourceFile = ts.createSourceFile('index.js', code, ts.ScriptTarget.ES5);
+  return sourceFile.statements.map(parseNode);
+}
+
+function getNodeText(node: ts.Node) {
+  return sourceFile.text.substring(node.pos, node.end);
 }
 
 function operatorTokenToOperator(token: ts.Token<ts.BinaryOperator>) {
@@ -14,9 +29,11 @@ function operatorTokenToOperator(token: ts.Token<ts.BinaryOperator>) {
       return 'SUBTRACT';
     case ts.SyntaxKind.LessThanToken:
       return 'LESS_THAN';
+    case ts.SyntaxKind.EqualsToken:
+      return 'EQUALS';
     default:
       throw new Error(
-        `Unknown binary operator token ${token.kind}: ${token.getText()}`
+        `Unknown binary operator token ${token.kind}: ${getNodeText(token)}`
       );
   }
 }
@@ -92,9 +109,35 @@ function parseNode(node: ts.Node): STATEMENT {
       value: Number(numericLiteral.text),
     };
   }
+  if (node.kind === ts.SyntaxKind.VariableStatement) {
+    const varStatement = node as ts.VariableStatement;
+    // TODO: not really a block
+    return {
+      type: 'BLOCK',
+      body: varStatement.declarationList.declarations.map(declaration => {
+        return {
+          type: 'VAR',
+          lhs: (declaration.name as ts.Identifier).text,
+          rhs: declaration.initializer
+            ? parseNode(declaration.initializer)
+            : UNDEFINED_LITERAL,
+        } as STATEMENT;
+      }),
+    };
+  }
+  if (ts.isFunctionExpression(node)) {
+    return {
+      type: 'FUNCTION',
+      name: node.name ? node.name.text : undefined,
+      params: node.parameters.map(
+        parameter => (parameter.name as ts.Identifier).text
+      ),
+      body: parseNode(node.body!) as BLOCK_STATEMENT,
+    };
+  }
   if (node.kind === ts.SyntaxKind.ExpressionStatement) {
     return parseNode((node as ts.ExpressionStatement).expression);
   }
 
-  throw new Error(`Unknown node ${node.kind}: ${node}`);
+  throw new Error(`Unknown node ${node.kind}: ${getNodeText(node)}`);
 }
