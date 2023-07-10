@@ -7,8 +7,10 @@ export function testProgram(name: string, program: string) {
     it('returns correct value', () => {
       const theirResult = eval(program);
       const ourResult = execute(parse(program));
-      expect(typeof theirResult).toBe(ourResult.type.toLowerCase());
-      expect(String(theirResult)).toBe(string(ourResult));
+      expect(ourResult.type.toLowerCase())
+        .withContext(JSON.stringify(ourResult, undefined, 2))
+        .toBe(typeof theirResult);
+      expect(string(ourResult)).toBe(String(theirResult));
     });
   });
 }

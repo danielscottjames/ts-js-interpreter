@@ -84,6 +84,17 @@ function parseNode(node: ts.Node): STATEMENT {
       rhs: parseNode(elementAccess.argumentExpression) as EXPRESSION,
     };
   }
+  if (node.kind === ts.SyntaxKind.PropertyAccessExpression) {
+    const propertyAccess = node as ts.PropertyAccessExpression;
+    return {
+      type: 'OBJECT_REFERENCE',
+      lhs: parseNode(propertyAccess.expression) as EXPRESSION,
+      rhs: {
+        type: 'STRING_LITERAL',
+        value: propertyAccess.name.text,
+      },
+    };
+  }
   if (node.kind === ts.SyntaxKind.ReturnStatement) {
     const returnStatement = node as ts.ReturnStatement;
     return {
@@ -117,6 +128,13 @@ function parseNode(node: ts.Node): STATEMENT {
     return {
       type: 'NUMBER_LITERAL',
       value: Number(numericLiteral.text),
+    };
+  }
+  if (node.kind === ts.SyntaxKind.StringLiteral) {
+    const stringLiteral = node as ts.StringLiteral;
+    return {
+      type: 'STRING_LITERAL',
+      value: stringLiteral.text,
     };
   }
   if (node.kind === ts.SyntaxKind.NullKeyword) {
